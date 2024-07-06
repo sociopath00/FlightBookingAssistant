@@ -1,0 +1,5 @@
+flight_number,source,destination,date,price
+1001,mumbai,new delhi,2024-07-12,5000
+1002,new delhi,mumbai,2024-07-15,4500
+1003,bangalore,pune,2024-07-12,12000
+1004,mumbai,bangalore,2024-07-15,8000
