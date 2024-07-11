@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 
 temp.py
+.idea
+db_process.py

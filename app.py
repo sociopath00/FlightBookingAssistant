@@ -3,7 +3,7 @@ import os
 import dotenv
 from autogen import AssistantAgent, UserProxyAgent, GroupChat, GroupChatManager
 from flask import Flask, render_template, request, jsonify
-from src.tools import flight_list
+from src.tools import flight_list, flight_booking
 
 
 # load env
@@ -46,7 +46,7 @@ def chat():
     user_agent = UserProxyAgent(
         name="user_agent",
         is_termination_msg=should_terminate_user,
-        # max_consecutive_auto_reply=2,  # to avoid loops
+        max_consecutive_auto_reply=5,  # to avoid loops
         human_input_mode="NEVER",
         code_execution_config=False,
         llm_config=False,
@@ -56,11 +56,12 @@ def chat():
 
     flight_booking_agent = AssistantAgent(
         name="flight_booking_agent",
-        # max_consecutive_auto_reply=2,
+        max_consecutive_auto_reply=4,
         human_input_mode="NEVER",
         llm_config=llm_config,
         system_message="You are helpful assistant who uses custom tools to extracts list of flights using "
-                       "source city, destination city and travel date",
+                       "source city, destination city and travel date. "
+                       "Display the result as bullet points from Data returned by tool",
         description="You are helpful assistant who extracts list of flights using "
                        "source city, destination city and travel date"
     )
@@ -69,6 +70,10 @@ def chat():
                                           description="Function to fetch the list of flights between "
                                                       "source city and destination city for a given travel date")(
         flight_list)
+
+    flight_booking_agent.register_for_llm(name="flight_booking",
+                                          description="Function to fetch flight_id and ask personal information"
+                                                      "from users like Name and Age")(flight_booking)
     # status_agent = AssistantAgent(
     #     name="flight_booking_agent",
     #     max_consecutive_auto_reply=2,
@@ -78,10 +83,16 @@ def chat():
     # )
 
     user_agent.register_for_execution(name="flight_list")(flight_list)
+    user_agent.register_for_execution(name="flight_booking")(flight_booking)
 
+    speaker_transition = {
+        user_agent: [flight_booking_agent]
+    }
     group_chat = GroupChat(agents=[user_agent, flight_booking_agent],
                            messages=[],
-                           send_introductions=True,
+                           allowed_or_disallowed_speaker_transitions=speaker_transition,
+                           speaker_transitions_type="allowed",
+                           # send_introductions=True,
                            max_round=20)
 
     group_manager = GroupChatManager(
