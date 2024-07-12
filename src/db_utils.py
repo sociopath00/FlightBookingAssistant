@@ -5,6 +5,7 @@ import dotenv
 import pandas as pd
 import psycopg2
 from psycopg2 import pool
+import redis
 
 dotenv.load_dotenv('../config/.env')
 
@@ -50,6 +51,11 @@ def get_flight_details(source: str, destination: str, travel_date: date) -> pd.D
     # df["departure_time"] = df["departure_time"].dt.strftime("%H:%M:%s")
     print(df)
     return df
+
+
+def redis_connection_pool():
+    conn = redis.from_url(os.environ["REDIS_CONN_STRING"])
+    return conn
 
 
 if __name__ == "__main__":

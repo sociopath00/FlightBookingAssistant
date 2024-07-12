@@ -3,7 +3,9 @@ import os
 import dotenv
 from autogen import AssistantAgent, UserProxyAgent, GroupChat, GroupChatManager
 from flask import Flask, render_template, request, jsonify
+
 from src.tools import flight_list, flight_booking
+from src.db_utils import redis_connection_pool
 
 
 # load env
@@ -25,9 +27,23 @@ def save_history(history):
     message_history = history
 
 
-def get_history():
-    global message_history
-    return message_history
+# def get_history():
+#     global message_history
+#     return message_history
+
+def get_history(conv_id: str):
+    redis_client = redis_connection_pool()
+
+    user_agent_history = redis_client.get(f"user_agent_{conv_id}")
+    user_agent_history = eval(user_agent_history) if user_agent_history else []
+
+    flight_booking_agent_history = redis_client.get(f"flight_booking_agent_{conv_id}")
+    flight_booking_agent_history = eval(flight_booking_agent_history) if flight_booking_agent_history else []
+
+    return {
+        "user_agent": user_agent_history,
+        "flight_booking_agent": flight_booking_agent_history,
+    }
 
 
 @app.route("/")
@@ -37,8 +53,12 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    print(request.json)
     message = request.json["message"]
-    print(get_history())
+    conv_id = request.json["id"]
+
+    history = get_history(conv_id)
+    print(history)
 
     def should_terminate_user(msg):
         return "tool_calls" not in msg and msg["role"] != "tool"
@@ -101,16 +121,19 @@ def chat():
         human_input_mode="NEVER"
     )
 
-    history = get_history()
     flight_booking_agent._oai_messages = {group_manager: history["flight_booking_agent"]}
     user_agent._oai_messages = {group_manager: history["user_agent"]}
 
     user_agent.initiate_chat(group_manager, message=message, clear_history=False)
 
-    save_history({
-        "flight_booking_agent": flight_booking_agent.chat_messages.get(group_manager),
-        "user_agent": user_agent.chat_messages.get(group_manager)
-    })
+    # save_history({
+    #     "flight_booking_agent": flight_booking_agent.chat_messages.get(group_manager),
+    #     "user_agent": user_agent.chat_messages.get(group_manager)
+    # })
+
+    redis_client = redis_connection_pool()
+    redis_client.set(f"user_agent_{conv_id}", str(user_agent.chat_messages.get(group_manager)))
+    redis_client.set(f"flight_booking_agent_{conv_id}", str(flight_booking_agent.chat_messages.get(group_manager)))
 
     return jsonify(group_chat.messages[-1])
 

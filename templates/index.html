@@ -68,6 +68,7 @@
         const form = document.querySelector('form');
         const input = form.querySelector('input');
         const messagesEle = document.querySelector('.messages');
+        const id = crypto.randomUUID()
 
         const messages = []
 
@@ -92,7 +93,7 @@
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({message}),
+                body: JSON.stringify({message, "id": id}),
                 method: "POST"
             }).then(response => response.json()).then(data => {
                 messages.push({
