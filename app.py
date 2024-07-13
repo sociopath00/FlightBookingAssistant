@@ -4,7 +4,7 @@ import dotenv
 from autogen import AssistantAgent, UserProxyAgent, GroupChat, GroupChatManager
 from flask import Flask, render_template, request, jsonify
 
-from src.tools import flight_list, flight_booking
+from src.tools import flight_list, flight_booking, booking_confirmation
 from src.db_utils import redis_connection_pool
 
 
@@ -94,6 +94,11 @@ def chat():
     flight_booking_agent.register_for_llm(name="flight_booking",
                                           description="Function to fetch flight_id and ask personal information"
                                                       "from users like Name and Age")(flight_booking)
+
+    flight_booking_agent.register_for_llm(name="booking_confirmation",
+                                          description="Function to confirm flight booking with details"
+                                                      "of passenger like Name and Age")(booking_confirmation)
+
     # status_agent = AssistantAgent(
     #     name="flight_booking_agent",
     #     max_consecutive_auto_reply=2,
@@ -104,6 +109,7 @@ def chat():
 
     user_agent.register_for_execution(name="flight_list")(flight_list)
     user_agent.register_for_execution(name="flight_booking")(flight_booking)
+    user_agent.register_for_execution(name="booking_confirmation")(booking_confirmation)
 
     speaker_transition = {
         user_agent: [flight_booking_agent]

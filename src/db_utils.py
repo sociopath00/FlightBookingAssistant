@@ -53,6 +53,37 @@ def get_flight_details(source: str, destination: str, travel_date: date) -> pd.D
     return df
 
 
+def update_available_seats(flight_id: int, travel_date: str):
+    conn = postgres_connection_pool()
+    query = f"""
+    UPDATE daily_flights 
+        SET seats_available = seats_available-1
+    WHERE flight_id = {flight_id} AND
+          flight_date = '{travel_date}'
+    """
+
+    cursor = conn.cursor()
+    cursor.execute(query)
+    conn.commit()
+
+    return
+
+
+def add_passenger_details(name: str, age: str, flight_id: int, travel_date: str, PNR):
+    conn = postgres_connection_pool()
+
+    query = f"""
+    INSERT INTO booked_tickets VALUES(
+    '{PNR}', {flight_id}, '{name}', {age}, '{travel_date}')
+    """
+
+    cursor = conn.cursor()
+    cursor.execute(query)
+    conn.commit()
+
+    return
+
+
 def redis_connection_pool():
     conn = redis.from_url(os.environ["REDIS_CONN_STRING"])
     return conn
