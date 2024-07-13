@@ -6,17 +6,17 @@ and gathering the personal information.
 *Note: I am still actively adding different modules*
 
 
-### Prerequisite
-- Postgres: To store flight related data 
-- Redis: To store the conversation
-- Python 
+1. Prerequisite
+   - Postgres: To store flight related data 
+   - Redis: To store the conversation
+   - Python 
 
-### Clone this Repo
+2. Clone this Repo
 
-### Install the packages
+3. Install the packages <br>
 ```pip install -r requirements.txt```
 
-### Create a ```.env``` file and store the environment variables
+4. Create a ```.env``` file in config directory and store the environment variables
 
-### Start the conversation
+5. Start the conversation <br>
 ```python app.py```
