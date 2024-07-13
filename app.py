@@ -53,7 +53,6 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    print(request.json)
     message = request.json["message"]
     conv_id = request.json["id"]
 
