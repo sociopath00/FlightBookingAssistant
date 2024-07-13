@@ -2,8 +2,9 @@ from typing import Annotated
 from pydantic import BaseModel, Field, model_validator
 from datetime import date, datetime
 import pandas as pd
+import uuid
 
-from src.db_utils import get_flight_details
+from src.db_utils import get_flight_details, update_available_seats, add_passenger_details
 
 
 class FlightBookingInputs(BaseModel):
@@ -62,22 +63,34 @@ def flight_booking(inputs: Annotated[FlightConfirmationInputs, "Inputs for fligh
     return f"Please provide Name and Age to confirm your booking for flight {flight_id}"
 
 
-class PassengerDetails(BaseModel):
-    passenger_name: Annotated[str, Field(description="name of the passenger")]
-    passenger_age: Annotated[int, Field(description="age of the passenger")]
+# class PassengerDetails(BaseModel):
+#     passenger_name: Annotated[str, Field(description="name of the passenger")]
+#     passenger_age: Annotated[int, Field(description="age of the passenger")]
+#     flight_id: Annotated[int, Field(description="The flight id to book a seat eg. 1001, 2003 ")]
+#
+#     @model_validator(mode="before")
+#     def check(cls, values):
+#         missing_inputs = []
+#         if not values.get("passenger_name"):
+#             missing_inputs.append("name")
+#         if not values.get("passenger_age"):
+#             missing_inputs.append("age")
+#
+#         if missing_inputs:
+#             raise ValueError(f"Please provide {','.join(missing_inputs)}")
+#
+#         return values
 
-    @model_validator(mode="before")
-    def check(cls, values):
-        missing_inputs = []
-        if not values.get("passenger_name"):
-            missing_inputs.append("name")
-        if not values.get("passenger_age"):
-            missing_inputs.append("age")
+def booking_confirmation(
+        passenger_name: str, passenger_age: str, travel_date: str, flight_id: int
+) -> str:
+    # generate PNR
+    PNR = uuid.uuid4()
+    add_passenger_details(passenger_name, passenger_age, flight_id, travel_date, PNR)
+    update_available_seats(flight_id, travel_date)
 
-        if missing_inputs:
-            raise ValueError(f"Please provide {','.join(missing_inputs)}")
+    return f"Your flight is booking is confirmed. Your PNR is {PNR}"
 
-        return values
 
-def booking_confirmation(inputs: Annotated[PassengerDetails, "Passenger details for Ticket booking"]) -> str:
-    pass
+
+
