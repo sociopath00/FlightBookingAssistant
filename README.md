@@ -10,6 +10,7 @@ and gathering the personal information.
    - Postgres: To store flight related data 
    - Redis: To store the conversation
    - Python 
+   - OPENAI API KEY (or you can use any Opens Source LLM)
 
 2. Clone this Repo
 
