@@ -11,6 +11,7 @@ and gathering the personal information.
    - Redis: To store the conversation
    - Python 
    - OPENAI API KEY (or you can use any Opens Source LLM)
+   - GIT
 
 2. Clone this Repo
 
