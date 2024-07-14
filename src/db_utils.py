@@ -84,6 +84,25 @@ def add_passenger_details(name: str, age: str, flight_id: int, travel_date: str,
     return
 
 
+def ticket_cancel(PNR):
+    conn = postgres_connection_pool()
+    cursor = conn.cursor()
+
+    query1 = f"SELECT * FROM booked_tickets WHERE PNR='{PNR}'"
+    cursor.execute(query1)
+    result = cursor.fetchall()
+    if not result:
+        return False
+
+    query2 = f"""
+    DELETE FROM booked_tickets WHERE PNR = '{PNR}'
+    """
+    cursor.execute(query2)
+    conn.commit()
+
+    return True
+
+
 def redis_connection_pool():
     conn = redis.from_url(os.environ["REDIS_CONN_STRING"])
     return conn
