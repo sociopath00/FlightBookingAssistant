@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, model_validator
 from datetime import date, datetime
 import uuid
 
-from src.db_utils import get_flight_details, update_available_seats, add_passenger_details
+from src.db_utils import get_flight_details, update_available_seats, add_passenger_details, ticket_cancel
 
 
 class FlightBookingInputs(BaseModel):
@@ -73,5 +73,16 @@ def booking_confirmation(
     return f"Your flight is booking is confirmed. Your PNR is {PNR}"
 
 
+# class TicketCancelInput(BaseModel):
+#     PNR: Annotated[str, Field(description="PNR status to cancel the booking")]
+#
+#     @model_validator(mode='before')
+#     def check(cls, values):
+#         pass
 
 
+def ticket_cancellation(PNR: str):
+    if ticket_cancel(PNR):
+        return "Your ticket has been cancelled and Refund will be initiated shortly."
+    else:
+        return "Please provide valid PNR associated with the ticket"
